@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/login",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ORVIA · DLM CASH LABS PRIVATE LIMITED",
+      "hasCanvas": false,
+      "bodyTextLen": 1245,
+      "bodyTextHash": "fb7aa2fc32c88b0fa88333820e77904400a964ce4601b378dd944577dd272e85",
+      "bodyTextPrefix": "ORVIA उत्पाद सेवाएँ योजना परिचय लेख संपर्क EN HI UR प्रवेश डेस्क",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/login.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ORVIA · DLM CASH LABS PRIVATE LIMITED",
+      "hasCanvas": false,
+      "bodyTextLen": 1180,
+      "bodyTextHash": "b2dd2c70855b25d7172e19ce3fe34c1a9ef6fd7076b388f40ed62851c4e42469",
+      "bodyTextPrefix": "ORVIA USDT $1.0000 +0.00% BTC $83,853.00 +0.00% ETH $2,680.00 +0",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/login-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/login.json"
+}

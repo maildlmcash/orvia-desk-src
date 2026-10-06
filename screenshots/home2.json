@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ORVIA",
+      "hasCanvas": false,
+      "bodyTextLen": 2348,
+      "bodyTextHash": "b627ef8e07b31e1e24b311be99683d6061aa4ef5c426504b20421e5f06bcf213",
+      "bodyTextPrefix": "ORVIA खरीदें बेचें डेस्क खोलें व्यापारी सहायता लेख संपर्क EN HI ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/home2.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ORVIA · DLM CASH LABS PRIVATE LIMITED",
+      "hasCanvas": false,
+      "bodyTextLen": 2275,
+      "bodyTextHash": "ce6c7bf97832728ee371c52c47a5b7bcb2c0e0f2110af2279610ab2310703f83",
+      "bodyTextPrefix": "ORVIA USDT $1.0000 +0.00% · BTC $83,853.00 +0.00% · ETH $2,680.0",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/home2-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/home2.json"
+}

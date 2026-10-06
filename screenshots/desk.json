@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/desk",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ORVIA · पटल",
+      "hasCanvas": false,
+      "bodyTextLen": 1433,
+      "bodyTextHash": "4c439af5dacd737dad7844667cf3f42c74ffaa3ec707eb74d27977035914bb72",
+      "bodyTextPrefix": "ORVIA बाज़ार त्वरित सौदे बटुआ EN HI UR प्रवेश क कबीर सिंह USDT $",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/desk.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ORVIA · पटल",
+      "hasCanvas": false,
+      "bodyTextLen": 1263,
+      "bodyTextHash": "ddbdbcb5e6abd44433ac9d2e1f09e2e767fa1962041015ecc14b053b1f45bd65",
+      "bodyTextPrefix": "ORVIA EN HI UR क USDT $1.0000 +0.00% BTC $83,853.00 +0.00% ETH $",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/desk-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/desk.json"
+}

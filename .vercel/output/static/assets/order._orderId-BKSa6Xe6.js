@@ -1,0 +1,1 @@
+import{I as e}from"./ui-D-R3VDKo.js";import{t}from"./index-CT36b0Me.js";import{r as n}from"./trade-DaDIFhJG.js";var r=e(),i=function(){let{orderId:e}=t.useParams();return(0,r.jsx)(n,{orderId:e})};export{i as component};

@@ -1,0 +1,40 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ORVIA",
+      "hasCanvas": false,
+      "bodyTextLen": 1481,
+      "bodyTextHash": "057e30fe3baaabaf42da4a6e16af49695fe8742b571b14d437a069027587de8d",
+      "bodyTextPrefix": "ORVIA बाज़ार त्वरित सौदे बटुआ EN HI UR क कबीर सिंह लाइव USDT $1.",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ORVIA",
+      "hasCanvas": false,
+      "bodyTextLen": 1313,
+      "bodyTextHash": "0cab22e02ee100e8cdb3afd0dc53e25208bef706cbc627fd6291d1c7451346a8",
+      "bodyTextPrefix": "ORVIA EN HI UR क लाइव USDT $1.0000 +0.00% BTC $83,853.00 +0.00% ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "mobile: title changed (\"ORVIA · सहकर्मी पटल\" -> \"ORVIA\")"
+  ]
+}

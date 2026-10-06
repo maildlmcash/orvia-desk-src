@@ -1,0 +1,224 @@
+@import "tailwindcss";
+@import "@fontsource/noto-sans/latin-400.css";
+@import "@fontsource/noto-sans/latin-500.css";
+@import "@fontsource/noto-sans/latin-600.css";
+@import "@fontsource/noto-sans/latin-700.css";
+@import "@fontsource/noto-sans/devanagari-400.css";
+@import "@fontsource/noto-sans/devanagari-500.css";
+@import "@fontsource/noto-sans/devanagari-600.css";
+@import "@fontsource/noto-sans/devanagari-700.css";
+@import "@fontsource/noto-nastaliq-urdu/arabic-400.css";
+@import "@fontsource/noto-nastaliq-urdu/arabic-600.css";
+@import "@fontsource/noto-nastaliq-urdu/arabic-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-fg: var(--c-fg);
+  --color-muted: var(--c-muted);
+  --color-primary: var(--c-primary);
+  --color-primary-fg: var(--c-primary-fg);
+  --color-line: var(--c-line);
+  --color-buy: var(--c-buy);
+  --color-sell: var(--c-sell);
+  --color-buy-fg: var(--c-buy-fg);
+  --color-sell-fg: var(--c-sell-fg);
+  --color-buy-soft: var(--c-buy-soft);
+  --color-sell-soft: var(--c-sell-soft);
+  --font-sans: "Noto Sans", "Noto Sans Devanagari", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --radius-md: 0.45rem;
+}
+
+:root,
+[data-theme="day"] {
+  color-scheme: light;
+  --c-bg: #f4f6f8;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef1f4;
+  --c-fg: #121417;
+  --c-muted: #6b7280;
+  --c-primary: #c4841a;
+  --c-primary-fg: #1a1206;
+  --c-line: #e4e7eb;
+  --c-buy: #0f9f6e;
+  --c-sell: #e23b45;
+  --c-buy-fg: #f3fff9;
+  --c-sell-fg: #fff5f5;
+  --c-buy-soft: #e5f7ef;
+  --c-sell-soft: #fde8ea;
+}
+
+[data-theme="night"] {
+  color-scheme: dark;
+  --c-bg: #0b0e11;
+  --c-surface: #14181d;
+  --c-surface-2: #1c2229;
+  --c-fg: #f2f4f6;
+  --c-muted: #8b939e;
+  --c-primary: #e8a317;
+  --c-primary-fg: #1a1206;
+  --c-line: #2a313a;
+  --c-buy: #20b26c;
+  --c-sell: #ef454a;
+  --c-buy-fg: #04140d;
+  --c-sell-fg: #2a0c0e;
+  --c-buy-soft: #13281e;
+  --c-sell-soft: #2c1618;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg: #07090b;
+  --c-surface: #101317;
+  --c-surface-2: #181c22;
+  --c-fg: #f5f6f7;
+  --c-muted: #8d95a0;
+  --c-primary: #e8a317;
+  --c-primary-fg: #1a1206;
+  --c-line: #262c34;
+  --c-buy: #20b26c;
+  --c-sell: #ef454a;
+  --c-buy-fg: #04140d;
+  --c-sell-fg: #2a0c0e;
+  --c-buy-soft: #10241b;
+  --c-sell-soft: #2a1416;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+  html[data-lang="ur"] body {
+    font-family: "Noto Nastaliq Urdu", "Noto Sans", sans-serif;
+    line-height: 1.9;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--c-bg);
+    color: var(--c-fg);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  ::placeholder {
+    color: var(--c-muted);
+  }
+  :focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+  }
+}
+
+.orvia-head {
+  box-shadow:
+    0 1px 0 var(--c-line),
+    0 14px 36px color-mix(in srgb, var(--c-fg) 6%, transparent);
+}
+
+.orvia-tape-row {
+  display: flex;
+  align-items: center;
+  background: var(--c-surface);
+  border: 0;
+}
+
+.orvia-tape {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 1.25rem, #000 calc(100% - 2.75rem), transparent);
+}
+
+.orvia-tape-track {
+  display: flex;
+  width: max-content;
+  animation: orvia-tape 48s linear infinite;
+  will-change: transform;
+}
+
+.orvia-tape-row:hover .orvia-tape-track,
+.orvia-tape-row.is-held .orvia-tape-track {
+  animation-play-state: paused;
+}
+
+.orvia-quote {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.45rem 0.2rem 0.45rem 0.85rem;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.orvia-pip {
+  width: 0.375rem;
+  height: 0.375rem;
+  flex: none;
+  border-radius: 999px;
+  background: var(--c-line);
+}
+
+.orvia-pip-live {
+  background: var(--c-buy);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-buy) 22%, transparent);
+}
+
+.orvia-pip-beat {
+  animation: orvia-pip 2.2s ease-out infinite;
+}
+
+@keyframes orvia-tape {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes orvia-pip {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-buy) 50%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 5px transparent;
+  }
+}
+
+html[data-lang="ur"] button,
+html[data-lang="ur"] input,
+html[data-lang="ur"] select,
+html[data-lang="ur"] textarea {
+  min-height: 3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .orvia-tape {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  .orvia-tape-track > :last-child {
+    display: none;
+  }
+  .orvia-pip-beat {
+    animation: none;
+  }
+}

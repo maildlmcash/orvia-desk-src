@@ -1,0 +1,1 @@
+import{l as e}from"./pages-C5w_wgyw.js";var t=e;export{t as component};

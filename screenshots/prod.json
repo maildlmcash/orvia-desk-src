@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "ORVIA",
+      "hasCanvas": false,
+      "bodyTextLen": 2316,
+      "bodyTextHash": "7d585b361c82fec053278cef042c74bf3ca9faca76b870513cba128d837f833f",
+      "bodyTextPrefix": "ORVIA उत्पाद सेवाएँ योजना परिचय लेख संपर्क EN HI UR डेस्क खोलें ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/prod.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "ORVIA",
+      "hasCanvas": false,
+      "bodyTextLen": 2258,
+      "bodyTextHash": "6fea1cfb2be06e4d95a523bbeef1b472b44cbc6de6e8765b825f3e3afc758191",
+      "bodyTextPrefix": "ORVIA USDT $1.0000 +0.00% BTC $83,853.00 +0.00% ETH $2,680.00 +0",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/prod-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/prod.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}

@@ -1,15 +1,19 @@
-import { BadgeCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/cn";
 import { FIATS, RAILS, sortCoins } from "@/lib/p2p/catalog";
-import { fiatAmt, numFlex } from "@/lib/p2p/format";
 import { personName, useI18n } from "@/lib/p2p/i18n";
 import { adPrice, merchantLive } from "@/lib/p2p/logic";
 import { useDesk } from "@/lib/p2p/store";
 import type { Ad, Fiat, Rail } from "@/lib/p2p/types";
 import { KycSheet, TradeSheet } from "./trade";
 import { Button, fieldClass } from "./ui";
+import { MarketRows } from "./market-rows";
+import { ExpressShell } from "./market-express";
+import { AdvancedFunnel, EMPTY_FUNNEL, funnelCount, funnelPass, type Funnel } from "./market-funnel";
+
+const PAGE_SIZE = 10;
 
 export function Market() {
   const { lang, t } = useI18n();
@@ -28,12 +32,21 @@ export function Market() {
   const [query, setQuery] = useState("");
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [followOnly, setFollowOnly] = useState(false);
+  const [merchantsOnly, setMerchantsOnly] = useState(false);
+  const [beginnerMode, setBeginnerMode] = useState(false);
+  const [sortKey, setSortKey] = useState<"price" | "completion" | "payMin" | "orders">("price");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [funnel, setFunnel] = useState<Funnel>(EMPTY_FUNNEL);
+  const [deskTab, setDeskTab] = useState<"express" | "p2p" | "block">("p2p");
+  const [page, setPage] = useState(0);
   const [trade, setTrade] = useState<Ad | null>(null);
   const [kycFor, setKycFor] = useState<string | null>(null);
 
   const listed = sortCoins(coins.filter((item) => item.listed));
   const me = users.find((user) => user.id === meId);
   const priceOf = (ad: Ad) => adPrice(ad, quotes, coins.find((item) => item.symbol === ad.coin)?.price);
+
   const rows = useMemo(() => {
     const fiatAmount = Number(amount);
     const side = want === "buy" ? "sell" : "buy";
@@ -45,7 +58,10 @@ export function Market() {
         if ((me?.blocked ?? []).includes(merchant.id) || (merchant.blocked ?? []).includes(meId)) return false;
         if (onlineOnly && !merchant.online) return false;
         if (followOnly && !(me?.following ?? []).includes(merchant.id)) return false;
+        if (merchantsOnly && merchant.sellerLicense?.status !== "active") return false;
+        if (beginnerMode && !ad.beginner) return false;
         if (rail !== "all" && !ad.rails.includes(rail)) return false;
+        if (!funnelPass(funnel, ad, merchant, me)) return false;
         if (query.trim()) {
           const name = personName(merchant.name, lang).toLowerCase();
           if (!name.includes(query.trim().toLowerCase())) return false;
@@ -57,13 +73,71 @@ export function Market() {
         }
         return true;
       })
-      .sort((a, b) => (want === "buy" ? priceOf(a) - priceOf(b) : priceOf(b) - priceOf(a)));
-  }, [ads, amount, coin, coins, fiat, followOnly, lang, me, meId, onlineOnly, query, quotes, rail, users, want]);
+      .sort((a, b) => {
+        const ma = users.find((u) => u.id === a.userId);
+        const mb = users.find((u) => u.id === b.userId);
+        let delta = 0;
+        if (sortKey === "price") delta = priceOf(a) - priceOf(b);
+        else if (sortKey === "completion") delta = (ma?.completion ?? 0) - (mb?.completion ?? 0);
+        else if (sortKey === "payMin") delta = (a.payMin ?? 15) - (b.payMin ?? 15);
+        else delta = (ma?.trades ?? 0) - (mb?.trades ?? 0);
+        if (sortKey === "price") {
+          const buyPrefer = want === "buy" ? delta : -delta;
+          return sortDir === "asc" ? buyPrefer : -buyPrefer;
+        }
+        return sortDir === "asc" ? delta : -delta;
+      });
+  }, [ads, amount, beginnerMode, coin, coins, fiat, followOnly, funnel, lang, me, meId, merchantsOnly, onlineOnly, query, quotes, rail, sortDir, sortKey, users, want]);
 
+  useEffect(() => {
+    setPage(0);
+  }, [want, coin, fiat, rail, amount, query, onlineOnly, followOnly, merchantsOnly, beginnerMode, sortDir, sortKey, deskTab, funnel]);
+
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const pageRows = rows.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
   const kycMerchant = users.find((user) => user.id === kycFor);
+  const stripAds = pageRows.filter((ad) => (beginnerMode || want === "buy" ? ad.beginner : ad.featured));
 
   return (
     <div className="mx-auto grid w-full max-w-7xl gap-3 px-3 py-3 sm:px-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-200">
+        <span>{t("market.paperBanner")}</span>
+        <span className="font-mono text-[10px] uppercase tracking-wide opacity-80">LIVE_MONEY=false</span>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <div className="flex gap-1 rounded-md border border-line bg-surface p-1">
+          {(["express", "p2p", "block"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              className={cn(
+                "min-h-9 rounded px-3 text-xs font-bold uppercase tracking-wide",
+                deskTab === tab ? "bg-primary text-primary-fg" : "text-muted",
+              )}
+              onClick={() => setDeskTab(tab)}
+            >
+              {t(`market.tab.${tab}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs font-semibold">
+          <Link to="/orders" className="text-muted hover:text-fg">{t("nav.orders")}</Link>
+          <Link to="/wallet" className="text-muted hover:text-fg">{t("market.userCenter")}</Link>
+          <span className="text-muted" title={t("market.helpStub")}>{t("market.help")}</span>
+        </div>
+      </div>
+
+      {deskTab === "express" ? <ExpressShell priceOf={priceOf} setTrade={setTrade} setKycFor={setKycFor} /> : null}
+      {deskTab === "block" ? (
+        <p className="rounded-md border border-dashed border-line px-4 py-8 text-center text-sm text-muted">
+          {t("market.blockStub")}
+        </p>
+      ) : null}
+
+      {deskTab === "p2p" ? (
+      <>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex gap-1">
           {(["buy", "sell"] as const).map((side) => (
@@ -86,6 +160,7 @@ export function Market() {
         </div>
         <p className="text-xs text-muted">{t("common.count", { n: rows.length })}</p>
       </div>
+
       <div className="flex gap-1 overflow-x-auto border-b border-line">
         {listed.map((item) => (
           <button
@@ -101,23 +176,36 @@ export function Market() {
           </button>
         ))}
       </div>
-      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-        <input
+
+      <div className="sticky top-0 z-20 grid gap-2 rounded-md border border-line bg-surface/95 p-3 backdrop-blur lg:grid-cols-[1.4fr_1fr_1fr_auto]">
+        <div className="flex min-h-11 overflow-hidden rounded-md border border-line bg-bg">
+          <input
+            className="h-11 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+            inputMode="decimal"
+            placeholder={t("market.amountPh")}
+            aria-label={t("market.amountPh")}
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+          />
+          <select
+            className="h-11 border-s border-line bg-surface-2 px-2 text-sm font-semibold outline-none"
+            value={fiat}
+            onChange={(event) => setFiat(event.target.value as Fiat)}
+            aria-label={t("common.fiat")}
+          >
+            {FIATS.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
+        </div>
+        <select
           className={fieldClass}
-          inputMode="decimal"
-          placeholder={t("market.amountPh")}
-          aria-label={t("market.amountPh")}
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-        />
-        <select className={fieldClass} value={fiat} onChange={(event) => setFiat(event.target.value as Fiat)} aria-label={t("common.fiat")}>
-          {FIATS.map((code) => (
-            <option key={code} value={code}>
-              {t(`fiatName.${code}`)}
-            </option>
-          ))}
-        </select>
-        <select className={fieldClass} value={rail} onChange={(event) => setRail(event.target.value as Rail | "all")} aria-label={t("common.payment")}>
+          value={rail}
+          onChange={(event) => setRail(event.target.value as Rail | "all")}
+          aria-label={t("common.payment")}
+        >
           <option value="all">{t("common.all")}</option>
           {RAILS.map((code) => (
             <option key={code} value={code}>
@@ -125,120 +213,141 @@ export function Market() {
             </option>
           ))}
         </select>
-        <input
-          className={fieldClass}
-          placeholder={t("common.search")}
-          aria-label={t("common.search")}
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
         <div className="flex gap-2">
+          <select
+            className={fieldClass}
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as typeof sortKey)}
+            aria-label={t("market.sortBy")}
+          >
+            <option value="price">{t("market.sortPrice")}</option>
+            <option value="completion">{t("market.sortCompletion")}</option>
+            <option value="payMin">{t("market.sortPayMin")}</option>
+            <option value="orders">{t("market.sortOrders")}</option>
+          </select>
           <button
             type="button"
-            className={cn("min-h-11 flex-1 rounded-md px-3 text-sm font-semibold", onlineOnly ? "bg-primary text-primary-fg" : "bg-surface-2")}
+            className={cn(
+              "min-h-11 rounded-md border border-line px-3 text-sm font-semibold",
+              sortDir === "asc" ? "bg-primary text-primary-fg" : "bg-surface-2",
+            )}
+            onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          >
+            {sortDir === "asc" ? t("market.sortAsc") : t("market.sortDesc")}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <input
+            className={cn(fieldClass, "min-w-[10rem] flex-1")}
+            placeholder={t("common.search")}
+            aria-label={t("common.search")}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+          <button
+            type="button"
+            className={cn("min-h-11 rounded-md px-3 text-sm font-semibold", onlineOnly ? "bg-primary text-primary-fg" : "bg-surface-2")}
             onClick={() => setOnlineOnly((value) => !value)}
           >
             {t("market.onlineOnly")}
           </button>
           <button
             type="button"
-            className={cn("min-h-11 flex-1 rounded-md px-3 text-sm font-semibold", followOnly ? "bg-primary text-primary-fg" : "bg-surface-2")}
+            className={cn("min-h-11 rounded-md px-3 text-sm font-semibold", followOnly ? "bg-primary text-primary-fg" : "bg-surface-2")}
             onClick={() => setFollowOnly((value) => !value)}
           >
             {t("market.followingOnly")}
           </button>
+          <button
+            type="button"
+            className={cn("min-h-11 rounded-md px-3 text-sm font-semibold", merchantsOnly ? "bg-primary text-primary-fg" : "bg-surface-2")}
+            onClick={() => setMerchantsOnly((value) => !value)}
+          >
+            {t("market.merchantsOnly")}
+          </button>
+          <button
+            type="button"
+            className={cn("min-h-11 rounded-md px-3 text-sm font-semibold", beginnerMode ? "bg-buy text-white" : "bg-surface-2")}
+            onClick={() => setBeginnerMode((value) => !value)}
+          >
+            {t("market.beginnerMode")}
+          </button>
+          <button
+            type="button"
+            className={cn("min-h-11 rounded-md px-3 text-sm font-semibold", showAdvanced ? "bg-primary text-primary-fg" : "bg-surface-2")}
+            onClick={() => setShowAdvanced((value) => !value)}
+          >
+            {t("market.advancedFilters")}
+            {funnelCount(funnel) > 0 ? ` (${funnelCount(funnel)})` : ""}
+          </button>
         </div>
       </div>
+      {showAdvanced ? <AdvancedFunnel value={funnel} onChange={setFunnel} /> : null}
+
+      {beginnerMode || want === "buy" ? (
+        <div className="rounded-md border border-buy/30 bg-buy/10 px-3 py-2 text-xs font-medium text-buy">
+          {t("market.beginnerZone")}
+          {stripAds.length === 0 ? <span className="ms-2 text-muted">· {t("market.stripEmpty")}</span> : null}
+        </div>
+      ) : null}
+      {want === "sell" && !beginnerMode ? (
+        <div className="rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs font-medium text-primary">
+          {t("market.featuredAd")}
+          {stripAds.length === 0 ? <span className="ms-2 text-muted">· {t("market.stripEmpty")}</span> : null}
+        </div>
+      ) : null}
+
       {rows.length === 0 ? (
         <p className="rounded-md border border-dashed border-line px-4 py-10 text-center text-sm text-muted">{t("market.empty")}</p>
       ) : (
-        <div className="grid">
-          <div className="hidden grid-cols-[1.4fr_0.9fr_1fr_1fr_auto] gap-3 border-b border-line px-1 pb-2 text-xs font-medium text-muted lg:grid">
-            <span>{t("common.merchant")}</span>
-            <span>{t("common.price")}</span>
-            <span>{t("common.limits")}</span>
-            <span>{t("common.payment")}</span>
-            <span />
+        <div className="grid overflow-hidden rounded-md border border-line bg-surface">
+          <div className="hidden grid-cols-[1.5fr_0.9fr_1.1fr_1fr_auto] gap-3 border-b border-line bg-surface-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted lg:grid">
+            <span>{t("market.colAdvertisers")}</span>
+            <span>{t("market.colPrice")}</span>
+            <span>{t("market.colAvailLimit")}</span>
+            <span>{t("market.colPayment")}</span>
+            <span className="text-end">{t("market.colTrade")}</span>
           </div>
-          {rows.map((ad) => {
-            const merchant = users.find((user) => user.id === ad.userId);
-            if (!merchant) return null;
-            const meRow = users.find((user) => user.id === meId);
-            const verified = !!meRow?.docLast4 || kycs.some((item) => item.userId === meId && item.status === "approved");
-            const pass = passes.find((item) => item.buyerId === meId && item.sellerId === merchant.id && item.status === "active");
-            const pending = kycs.some(
-              (item) => item.userId === meId && item.sellerId === merchant.id && item.purpose === "buyer" && item.status === "pending",
-            );
-            const mine = ad.userId === meId;
-            const live = priceOf(ad);
-            let label = want === "buy" ? t("side.buy") : t("side.sell");
-            let action: (() => void) | null = () => setTrade(ad);
-            let identity = false;
-            if (mine) {
-              label = t("market.yourAd");
-              action = null;
-            } else if (ad.side === "sell" && !pass) {
-              label = pending ? t("market.waiting") : t("market.verify");
-              action = pending ? null : () => setKycFor(merchant.id);
-            } else if (ad.needKyc && !verified) {
-              label = t("market.extraId");
-              action = null;
-              identity = true;
-            } else if (ad.side === "buy" && (!meRow || !merchantLive(meRow))) {
-              label = t("nav.identity");
-              action = null;
-              identity = true;
-            }
-            return (
-              <article key={ad.id} className="grid gap-3 border-b border-line px-1 py-3 lg:grid-cols-[1.4fr_0.9fr_1fr_1fr_auto] lg:items-center">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-sm font-semibold">
-                    {personName(merchant.name, lang).slice(0, 1)}
-                  </span>
-                  <div>
-                    <p className="flex items-center gap-1 font-semibold">
-                      {personName(merchant.name, lang)}
-                      <BadgeCheck className="size-4 text-buy" aria-label={t("market.verified")} />
-                    </p>
-                    <p className="text-xs text-muted">
-                      {merchant.online ? t("common.online") : ""} · {merchant.trades} {t("common.trades")} · {merchant.completion}% {t("common.completion")}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {ad.priceMode === "float" ? `${t("market.float")} · ` : ""}
-                      {t("common.minutes", { n: ad.payMin ?? 15 })}
-                      {(ad.minComp ?? 0) > 0 ? ` · ${t("market.minComp", { n: ad.minComp ?? 0 })}` : ""}
-                      {ad.needKyc ? ` · ${t("market.extraId")}` : ""}
-                    </p>
-                  </div>
-                </div>
-                <p className={cn("font-mono text-xl font-semibold tabular-nums", want === "buy" ? "text-buy" : "text-sell")}>{fiatAmt(live, ad.fiat, lang)}</p>
-                <p className="text-sm">
-                  <span className="font-mono tabular-nums">{numFlex(ad.available, lang)} {ad.coin}</span>
-                  <span className="mt-1 block text-muted">
-                    {fiatAmt(ad.min * live, ad.fiat, lang)} – {fiatAmt(ad.max * live, ad.fiat, lang)}
-                  </span>
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {ad.rails.map((item) => (
-                    <span key={item} className="rounded-md bg-surface-2 px-2 py-1 text-xs font-medium">
-                      {t(`rail.${item}`)}
-                    </span>
-                  ))}
-                </div>
-                {identity ? (
-                  <Link to="/identity" className="inline-flex min-h-11 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-fg lg:w-auto">
-                    {label}
-                  </Link>
-                ) : (
-                  <Button variant={want === "buy" ? "buy" : "sell"} disabled={!action} onClick={action ?? undefined} className="w-full lg:w-auto">
-                    {label}
-                  </Button>
-                )}
-              </article>
-            );
-          })}
+          <MarketRows
+            pageRows={pageRows}
+            users={users}
+            meId={meId}
+            kycs={kycs}
+            passes={passes}
+            want={want}
+            amount={amount}
+            priceOf={priceOf}
+            setTrade={setTrade}
+            setKycFor={setKycFor}
+          />
         </div>
       )}
+
+      {rows.length > 0 ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <p className="text-muted">
+            {t("market.pageOf", { page: safePage + 1, pages: pageCount, n: rows.length })}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="line" disabled={safePage <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))} className="min-w-11 px-2">
+              <ChevronLeft className="size-4" />
+            </Button>
+            <Button
+              variant="line"
+              disabled={safePage >= pageCount - 1}
+              onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+              className="min-w-11 px-2"
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      <p className="text-center text-[11px] text-muted">{t("market.findAdMissing")}</p>
+      </>
+      ) : null}
+
       {trade ? <TradeSheet ad={trade} onClose={() => setTrade(null)} /> : null}
       {kycMerchant ? (
         <KycSheet

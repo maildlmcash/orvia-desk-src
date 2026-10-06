@@ -67,6 +67,10 @@ export interface Ad {
   autoReply?: string;
   needKyc?: boolean;
   minComp?: number;
+  /** Paper admin/market chrome: Featured Ad strip. */
+  featured?: boolean;
+  /** Paper admin/market chrome: Beginner zone strip. */
+  beginner?: boolean;
 }
 
 export interface ChatMessage {

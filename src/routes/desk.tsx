@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DeskScreen } from "@/components/p2p/screens";
+import { Market } from "@/components/p2p/market";
 
 export const Route = createFileRoute("/desk")({
-  component: DeskScreen,
+  component: Market,
 });

@@ -42,7 +42,7 @@ Locked reference for SIMILAR + MORE ADVANCED Market shell. Do **not** scrape Bin
 ## ADVANCE vs Binance (implement where store allows)
 1. Search by advertiser + online-only + followed + merchants-only
 2. Multi-sort: price, completion%, release time (payMin), order count
-3. Amount → row "you receive / you pay" preview
+3. Amount → row “you receive / you pay” preview
 4. Sticky filter + header
 5. Beginner mode toggle on both sides
 6. Admin full control per `docs/ADMIN_MODEL.md`
